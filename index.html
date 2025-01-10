@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Hangman Game</title>
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+    <title>Monster game</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: poppins, sans-serif;
             text-align: center;
         }
         .word-container {
@@ -24,6 +28,8 @@
             height: 100%;
             border-bottom: 2px solid;
             font-size: 24px;
+            font-weight: bold;
+            font-family: poppins, 
             text-transform: lowercase;
             display: flex;
             justify-content: center;
@@ -47,7 +53,9 @@
         }
         .letter-btn {
             padding: 10px 15px;
-            font-size: 18px;
+            font-size: 22px;
+            font-weight: bold;
+            font-family: poppins, 
             border-radius: 4px;
             border: none;
             color: white;
@@ -72,17 +80,37 @@
             cursor: not-allowed;
         }
         .celebration {
-            animation: confetti 2s ease-out forwards;
+            margin-top: 20px;
+            font-size: 22px;
+            animation: confetti 3s ease-out forwards;
         }
         .correct-word-list {
             font-size: 24px;
-            margin-top: 5px; /* Reduced margin */
-            /*max-height: 200px;*/ /* Set a height to make it scrollable */
-            overflow-y: auto;  /* Enable vertical scrolling */
-            line-height: 1.5;
+            margin-top: 5px; 
+            /*overflow-y: auto;*/  /* Enable vertical scrolling */
+            line-height: 1;
         }
         .correct-word {
             display: block;
+        }
+        .play-again-btn {
+            margin-top: 20px;
+            padding: 15px 30px;  /* Increased padding to make the button larger */
+            font-size: 24px;  /* Increased font size */
+            font-weight: bold;
+            background-color: yellow;  /* Yellow button */
+            color: black;  /* Black text */
+            border: none;
+            border-radius: 8px;  /* Slightly rounded corners */
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .play-again-btn:hover {
+            background-color: gold;  /* Slightly darker yellow when hovered */
+            transform: scale(1.05);  /* Button grows slightly when hovered */
+        }
+        .play-again-btn:active {
+            transform: scale(0.95);  /* Button shrinks slightly when clicked */
         }
         .game-over-hidden {
             display: none; /* Hide elements when game is over */
@@ -95,14 +123,19 @@
     </style>
 </head>
 <body>
-    <h1>Color Hangman Game</h1>
-    <div class="hangman-stage" id="hangmanCanvas"></div>
+    <h2>Monster Game</h2>
+          <div id="hangmanCanvas" style="width: 200px; height: 200px; margin: auto;">
+              <object id="monster-svg" type="image/svg+xml" data="monster.svg" width="200" height="200"></object>
+          </div>
+    <div class="hangman-stage" id="hangmanText"></div>
     <div class="word-container" id="wordContainer"></div>
     <div class="letter-options" id="letterOptions"></div>
-    <div class="correct-words" id="correctWords"></div>
+    <div class="game-over" id="gameOver" </div>
+    
 
     <script>
         const spellingWords = ["what", "of", "called", "jump", "eat", "ashes", "classes", "mixed", "acted"];
+       
         const orange = '#F28C28', green = 'MediumSeaGreen', blue = 'dodgerblue', pink = '#F987C5', purple = 'mediumpurple', red = 'red';
 
         const letterColors = {
@@ -113,22 +146,101 @@
             'u': green, 'v': red, 'w': orange, 'x': blue, 'y': red, 'z': pink
         };
 
+        const hangmanParts = [
+            "Head", "Left horn", "Right horn", "Left arm", "Right arm","Left foot", "Right foot", "Eye", "Mouth" ];
+
+        const hangmanPartsCount = hangmanParts.length;
+
+
         let correctWords = [];
         let currentWord = "";
-        let guessesLeft = 6;
+        let guessesLeft = hangmanPartsCount;
         let currentDashIndex = 0;
+        let currentPartIndex = 0;
+        let svgDoc = null;  // Global variable to store the loaded SVG document
+        
 
-        function startNewGame() {
+        updateMonster();
+        startNewGame();
+
+        
+
+        function startNewWord() {
             currentWord = spellingWords[Math.floor(Math.random() * spellingWords.length)];
             currentDashIndex = 0;
             renderWord();
             document.getElementById("letterOptions").innerHTML = "";
             selectDash(0);
-            updateHangmanCanvas();
-            document.getElementById("wordContainer").classList.remove("game-over-hidden");
-            document.getElementById("letterOptions").classList.remove("game-over-hidden");
+            updateGuessText();
         }
 
+        
+
+        
+
+        function updateMonster() {
+            const monsterSvg = document.getElementById("monster-svg");
+
+            monsterSvg.addEventListener("load", function () {
+                svgDoc = this.contentDocument;
+
+                if (!svgDoc) {
+                    console.error("Failed to load SVG document.");
+                    return;
+                }
+
+                hideAllMonsterParts();  // Hide monster parts at the start of the game
+            });
+        }
+
+        // Function to hide all monster parts
+        function hideAllMonsterParts() {
+            if (!svgDoc) return;  // Ensure the SVG is loaded
+            hangmanParts.forEach(part => {
+                const element = svgDoc.getElementById(part);
+                if (element) {
+                    element.style.opacity = 0;
+                }
+            });
+            currentPartIndex = 0;  // Reset index for "Play Again"
+        }
+
+        // Function to show the next part after an incorrect guess
+        function showNextPart() {
+            if (!svgDoc || currentPartIndex >= hangmanPartsCount) return;  // Ensure the SVG is loaded
+            const partId = hangmanParts[currentPartIndex];
+            const element = svgDoc.getElementById(partId);
+            if (element) {
+                element.style.opacity = 1;  // Reveal the next monster part
+            }
+            currentPartIndex++;
+        }
+
+        // Reset the monster when "Play Again" is clicked
+        function resetMonster() {
+            hideAllMonsterParts();  // Reuse the function to hide all parts
+        }
+
+
+
+        function startNewGame() {
+            resetGuessesAndScore();
+            resetMonster();
+            startNewWord();
+            resetDisplay();
+            updateGuessText();
+            
+            
+                    }
+        function resetDisplay () {
+            document.getElementById("wordContainer").classList.remove("game-over-hidden");
+                        document.getElementById("letterOptions").classList.remove("game-over-hidden");
+
+                    document.getElementById("hangmanText").classList.remove("game-over-hidden");
+
+            document.getElementById("gameOver").classList.add("game-over-hidden");
+        }      
+        
         function renderWord() {
             const container = document.getElementById("wordContainer");
             container.innerHTML = "";
@@ -159,11 +271,17 @@
             showLetterOptions(index, dash.dataset.letter);
         }
 
+        function resetGuessesAndScore() {
+            guessesLeft = hangmanPartsCount;
+            correctWords = [];
+            currentPartIndex = 0;
+        }
+
         function showLetterOptions(index, letter) {
             const color = letterColors[letter];
             const options = Object.keys(letterColors).filter(l => letterColors[l] === color);
             const optionsContainer = document.getElementById("letterOptions");
-            optionsContainer.innerHTML = "Select a letter: ";
+            
             options.forEach(opt => {
                 const container = document.createElement("div");
                 container.className = "letter-btn-container";
@@ -204,7 +322,8 @@
                 redXOverlay.style.display = "block";
                 container.classList.add("disabled-btn");
                 guessesLeft--;
-                drawHangman();
+                showNextPart();  // Show monster part instead of text-based body part
+                updateGuessText();
                 if (guessesLeft === 0) {
                     endGame();
                 }
@@ -221,16 +340,13 @@
             return -1;
         }
 
-        function drawHangman() {
-            const hangmanParts = ["Head", "Body", "Left Arm", "Right Arm", "Left Leg", "Right Leg"];
-            const currentPart = 6 - guessesLeft;
-            updateHangmanCanvas(hangmanParts[currentPart - 1]);
+        function updateGuessText() {
+            const currentPart = hangmanPartsCount - guessesLeft;
+            const text = document.getElementById("hangmanText");
+            const guessWord = guessesLeft === 1 ? "guess" : "guesses";  // Check if it's singular or plural
+            text.innerText = `You have ${guessesLeft} ${guessWord} left.`;
         }
 
-        function updateHangmanCanvas(part = "") {
-            const canvas = document.getElementById("hangmanCanvas");
-            canvas.innerText = `Hangman Progress: ${6 - guessesLeft}/6${part ? ` (${part})` : ""}`;
-        }
 
         function celebrateWordCompletion() {
             const wordContainer = document.getElementById("wordContainer");
@@ -240,28 +356,34 @@
             wordContainer.appendChild(celebration);
             setTimeout(() => {
                 wordContainer.innerHTML = "";
-                startNewGame();
+                startNewWord();
             }, 2000);
         }
 
         function endGame() {
             let message = `<h3>Game Over!</h3>`;
+            message += `<button class="play-again-btn" onclick="startNewGame()">Play Again</button>`;
             if (correctWords.length > 0) {
-                message += `<p>Congratulations, you guessed ${correctWords.length} word(s) correctly!</p>`;
+                message += `<p>Congratulations! </br> You guessed ${correctWords.length} word(s) correctly!</p>`;
             } else {
                 message += `<p>Great Try!</p>`;
             }
+            
             const wordList = correctWords.map(word => {
                 return `<span class="correct-word">${[...word].map(letter => `<span style="color: ${letterColors[letter]}">${letter}</span>`).join('')}</span>`;
             }).join("<br>");
-            document.getElementById("correctWords").innerHTML = `${message}<div class="correct-word-list">${wordList}</div>`;
+
+document.getElementById("gameOver").classList.remove("game-over-hidden");            
+            document.getElementById("gameOver").innerHTML = `${message}<div class="correct-word-list">${wordList}</div>`;
 
             // Hide dashes, letters, and buttons
             document.getElementById("wordContainer").classList.add("game-over-hidden");
             document.getElementById("letterOptions").classList.add("game-over-hidden");
+
+            document.getElementById("hangmanText").classList.add("game-over-hidden");// Hide guesses left message
         }
 
-        startNewGame();
+        startNewWord();
     </script>
 </body>
 </html>

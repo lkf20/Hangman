@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Hangman Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .word-container {
+            margin: 20px 0;
+        }
+        .dash-container {
+            display: inline-block;
+            width: 30px;
+            height: 40px;
+            margin: 5px;
+            position: relative;
+        }
+        .dash {
+            width: 100%;
+            height: 100%;
+            border-bottom: 2px solid;
+            font-size: 24px;
+            text-transform: lowercase;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .highlight {
+            outline: 2px dashed lightgray;
+        }
+        .letter-options {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .letter-btn-container {
+            position: relative;
+            margin: 5px;
+        }
+        .letter-btn {
+            padding: 10px 15px;
+            font-size: 18px;
+            border-radius: 4px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        .red-x-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: bold;
+            color: red;
+            pointer-events: none;
+            display: none;
+        }
+        .disabled-btn .red-x-overlay {
+            display: block;
+        }
+        .disabled-btn .letter-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .celebration {
+            animation: confetti 2s ease-out forwards;
+        }
+        .correct-word-list {
+            font-size: 24px;
+            margin-top: 10px; /* Reduced margin */
+            max-height: 200px; /* Set a height to make it scrollable */
+            overflow-y: auto;  /* Enable vertical scrolling */
+            line-height: 1.8;
+        }
+        .correct-word {
+            display: block;
+        }
+        .game-over-hidden {
+            display: none; /* Hide elements when game is over */
+        }
+        @keyframes confetti {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Color Hangman Game</h1>
+    <div class="hangman-stage" id="hangmanCanvas"></div>
+    <div class="word-container" id="wordContainer"></div>
+    <div class="letter-options" id="letterOptions"></div>
+    <div class="correct-words" id="correctWords"></div>
+
+    <script>
+        const spellingWords = ["what", "of", "called", "jump", "eat", "ashes", "classes", "mixed", "acted"];
+        const orange = '#F28C28', green = 'MediumSeaGreen', blue = 'dodgerblue', pink = '#F987C5', purple = 'mediumpurple', red = 'red';
+
+        const letterColors = {
+            'a': purple, 'b': orange, 'c': green, 'd': blue, 'e': pink,
+            'f': purple, 'g': pink, 'h': red, 'i': orange, 'j': green,
+            'k': blue, 'l': purple, 'm': green, 'n': pink, 'o': blue,
+            'p': green, 'q': red, 'r': purple, 's': orange, 't': blue,
+            'u': green, 'v': red, 'w': orange, 'x': blue, 'y': red, 'z': pink
+        };
+
+        let correctWords = [];
+        let currentWord = "";
+        let guessesLeft = 6;
+        let currentDashIndex = 0;
+
+        function startNewGame() {
+            currentWord = spellingWords[Math.floor(Math.random() * spellingWords.length)];
+            currentDashIndex = 0;
+            renderWord();
+            document.getElementById("letterOptions").innerHTML = "";
+            selectDash(0);
+            updateHangmanCanvas();
+            document.getElementById("wordContainer").classList.remove("game-over-hidden");
+            document.getElementById("letterOptions").classList.remove("game-over-hidden");
+        }
+
+        function renderWord() {
+            const container = document.getElementById("wordContainer");
+            container.innerHTML = "";
+            currentWord.split("").forEach((letter, index) => {
+                const dashContainer = document.createElement("div");
+                dashContainer.className = "dash-container";
+
+                const dash = document.createElement("div");
+                dash.className = "dash";
+                dash.style.borderColor = letterColors[letter];
+                dash.dataset.index = index;
+                dash.dataset.letter = letter;
+                dash.innerText = "";
+                dashContainer.appendChild(dash);
+
+                dashContainer.addEventListener("click", () => selectDash(index));
+                container.appendChild(dashContainer);
+            });
+        }
+
+        function selectDash(index) {
+            if (currentDashIndex !== null) {
+                document.querySelectorAll(".dash")[currentDashIndex]?.classList.remove("highlight");
+            }
+            currentDashIndex = index;
+            const dash = document.querySelectorAll(".dash")[index];
+            dash.classList.add("highlight");
+            showLetterOptions(index, dash.dataset.letter);
+        }
+
+        function showLetterOptions(index, letter) {
+            const color = letterColors[letter];
+            const options = Object.keys(letterColors).filter(l => letterColors[l] === color);
+            const optionsContainer = document.getElementById("letterOptions");
+            optionsContainer.innerHTML = "Select a letter: ";
+            options.forEach(opt => {
+                const container = document.createElement("div");
+                container.className = "letter-btn-container";
+                const btn = document.createElement("button");
+                btn.className = "letter-btn";
+                btn.style.backgroundColor = color;
+                btn.innerText = opt;
+
+                const redX = document.createElement("span");
+                redX.className = "red-x-overlay";
+                redX.innerText = "X";
+
+                container.appendChild(btn);
+                container.appendChild(redX);
+                container.addEventListener("click", () => handleGuess(opt, index, container));
+                optionsContainer.appendChild(container);
+            });
+        }
+
+        function handleGuess(guess, index, container) {
+            const letter = currentWord[index];
+            const redXOverlay = container.querySelector(".red-x-overlay");
+            if (guess === letter) {
+                const dash = document.querySelectorAll(".dash")[index];
+                dash.innerText = letter;
+                dash.style.color = letterColors[letter];
+                dash.classList.remove("highlight");
+                document.getElementById("letterOptions").innerHTML = "";
+
+                const nextIndex = getNextDashIndex(index);
+                if (nextIndex !== -1) {
+                    selectDash(nextIndex);
+                } else {
+                    correctWords.push(currentWord);
+                    celebrateWordCompletion();
+                }
+            } else {
+                redXOverlay.style.display = "block";
+                container.classList.add("disabled-btn");
+                guessesLeft--;
+                drawHangman();
+                if (guessesLeft === 0) {
+                    endGame();
+                }
+            }
+        }
+
+        function getNextDashIndex(currentIndex) {
+            const dashes = document.querySelectorAll(".dash");
+            for (let i = currentIndex + 1; i < dashes.length; i++) {
+                if (dashes[i].innerText === "") {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function drawHangman() {
+            const hangmanParts = ["Head", "Body", "Left Arm", "Right Arm", "Left Leg", "Right Leg"];
+            const currentPart = 6 - guessesLeft;
+            updateHangmanCanvas(hangmanParts[currentPart - 1]);
+        }
+
+        function updateHangmanCanvas(part = "") {
+            const canvas = document.getElementById("hangmanCanvas");
+            canvas.innerText = `Hangman Progress: ${6 - guessesLeft}/6${part ? ` (${part})` : ""}`;
+        }
+
+        function celebrateWordCompletion() {
+            const wordContainer = document.getElementById("wordContainer");
+            const celebration = document.createElement("div");
+            celebration.className = "celebration";
+            celebration.innerText = "🎉 Great Job! 🎉";
+            wordContainer.appendChild(celebration);
+            setTimeout(() => {
+                wordContainer.innerHTML = "";
+                startNewGame();
+            }, 2000);
+        }
+
+        function endGame() {
+            let message = `<h3>Game Over!</h3>`;
+            if (correctWords.length > 0) {
+                message += `<p>Congratulations, you guessed ${correctWords.length} word(s) correctly!</p>`;
+            } else {
+                message += `<p>Great Try!</p>`;
+            }
+            const wordList = correctWords.map(word => {
+                return `<span class="correct-word">${[...word].map(letter => `<span style="color: ${letterColors[letter]}">${letter}</span>`).join('')}</span>`;
+            }).join("<br>");
+            document.getElementById("correctWords").innerHTML = `${message}<div class="correct-word-list">${wordList}</div>`;
+
+            // Hide dashes, letters, and buttons
+            document.getElementById("wordContainer").classList.add("game-over-hidden");
+            document.getElementById("letterOptions").classList.add("game-over-hidden");
+        }
+
+        startNewGame();
+    </script>
+</body>
+</html>

@@ -6,7 +6,10 @@
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
     <title>Monster game</title>
+    <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
     <h2>Monster Game</h2>
@@ -15,8 +18,13 @@
           </div>
     <div class="hangman-stage" id="hangmanText"></div>
     <div class="word-container" id="wordContainer"></div>
-    <div class="letter-options" id="letterOptions"></div>
-    <div class="game-over" id="gameOver" </div>
+    <div class="letter-options" id="letterOptions">
+    </div>
+    <button id="hintButton" class="hint-btn">🔊 Hint</button>
+    <div class="game-over" 
+        id="gameOver" </div>
+     
+
     
 
     <script>
@@ -45,9 +53,11 @@
         let currentPartIndex = 0;
         let svgDoc = null;  // Global variable to store the loaded SVG document
         
-
+        
         updateMonster();
         startNewGame();
+
+        document.getElementById("hintButton").addEventListener("click", playHint);
 
         
 
@@ -56,8 +66,10 @@
             currentDashIndex = 0;
             renderWord();
             document.getElementById("letterOptions").innerHTML = "";
+
             selectDash(0);
             updateGuessText();
+
         }
 
         
@@ -124,6 +136,7 @@
 
                     document.getElementById("hangmanText").classList.remove("game-over-hidden");
 
+       document.getElementById("hintButton").classList.remove("game-over-hidden");     
             document.getElementById("gameOver").classList.add("game-over-hidden");
         }      
         
@@ -234,6 +247,7 @@
         }
 
 
+
         function celebrateWordCompletion() {
             const wordContainer = document.getElementById("wordContainer");
             const celebration = document.createElement("div");
@@ -266,8 +280,20 @@ document.getElementById("gameOver").classList.remove("game-over-hidden");
             document.getElementById("wordContainer").classList.add("game-over-hidden");
             document.getElementById("letterOptions").classList.add("game-over-hidden");
 
+            document.getElementById("hintButton").classList.add("game-over-hidden");
             document.getElementById("hangmanText").classList.add("game-over-hidden");// Hide guesses left message
         }
+
+        function playHint() {
+            if (!currentWord) return;
+            const msg = new SpeechSynthesisUtterance(currentWord);
+            msg.lang = 'en-US';  // Set language to English (US)
+            msg.rate = 0.5;  // Speed (lower values = slower)
+            msg.pitch = 1.5;  // Pitch (1.0 = normal)
+            window.speechSynthesis.speak(msg);
+        }
+
+      
 
         startNewWord();
     </script>

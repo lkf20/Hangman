@@ -1,134 +1,136 @@
-<style>
+html {
+  height: 100%;
+  width: 100%;
+}
 
-        html {
-          height: 100%;
-          width: 100%;
-        }
-        body {
-            font-family: poppins, sans-serif;
-            text-align: center;
-        }
-        .word-container {
-            margin: 20px 0;
-        }
-        .dash-container {
-            display: inline-block;
-            width: 30px;
-            height: 40px;
-            margin: 5px;
-            position: relative;
-        }
-        .dash {
-            width: 100%;
-            height: 100%;
-            border-bottom: 2px solid;
-            font-size: 24px;
-            font-weight: bold;
-            font-family: poppins, 
-            text-transform: lowercase;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .highlight {
-            outline: 2px dashed lightgray;
-        }
-        .letter-options {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .letter-btn-container {
-            position: relative;
-            margin: 5px;
-        }
-        .letter-btn {
-            padding: 10px 15px;
-            font-size: 22px;
-            font-weight: bold;
-            font-family: poppins, 
-            border-radius: 4px;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-        .red-x-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 22px;
-            font-weight: bold;
-            color: red;
-            pointer-events: none;
-            display: none;
-        }
-        .disabled-btn .red-x-overlay {
-            display: block;
-        }
-        .disabled-btn .letter-btn {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .celebration {
-            margin-top: 20px;
-            font-size: 22px;
-            animation: confetti 3s ease-out forwards;
-        }
-        .correct-word-list {
-            font-size: 24px;
-            margin-top: 5px; 
-            /*overflow-y: auto;*/  /* Enable vertical scrolling */
-            line-height: 1;
-        }
-        .correct-word {
-            display: block;
-        }
-        .play-again-btn {
-            margin-top: 20px;
-            padding: 15px 30px;  /* Increased padding to make the button larger */
-            font-size: 24px;  /* Increased font size */
-            font-weight: bold;
-            background-color: yellow;  /* Yellow button */
-            color: black;  /* Black text */
-            border: none;
-            border-radius: 8px;  /* Slightly rounded corners */
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-        .play-again-btn:hover {
-            background-color: gold;  /* Slightly darker yellow when hovered */
-            transform: scale(1.05);  /* Button grows slightly when hovered */
-        }
-        .play-again-btn:active {
-            transform: scale(0.95);  /* Button shrinks slightly when clicked */
-        }
-        .game-over-hidden {
-            display: none; /* Hide elements when game is over */
-        }
-        .hint-btn {
-            margin-top: 25px;
-            padding: 10px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            background-color: lightgreen;
-            color: black;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .hint-btn:hover {
-            background-color: green;
-            color: white;
-        }
-        
-        @keyframes confetti {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-    </style>
+
+body {
+        font-family: poppins, sans-serif;
+        text-align: center;
+    }
+    .word-container {
+        margin: 20px 0;
+    }
+    .dash-container {
+        display: inline-block;
+        width: 30px;
+        height: 40px;
+        margin: 5px;
+        position: relative;
+    }
+    .dash {
+        width: 100%;
+        height: 100%;
+        border-bottom: 2px solid;
+        font-size: 24px;
+        font-weight: bold;
+        font-family: poppins, 
+        text-transform: lowercase;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .highlight {
+        outline: 2px dashed lightgray;
+    }
+    .letter-options {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .letter-btn-container {
+        position: relative;
+        margin: 5px;
+    }
+    .letter-btn {
+        padding: 10px 15px;
+        font-size: 22px;
+        font-weight: bold;
+        font-family: poppins, 
+        border-radius: 4px;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+    .red-x-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 22px;
+        font-weight: bold;
+        color: red;
+        pointer-events: none;
+        display: none;
+    }
+    .disabled-btn .red-x-overlay {
+        display: block;
+    }
+    .disabled-btn .letter-btn {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .celebration {
+        margin-top: 20px;
+        font-size: 22px;
+        animation: confetti 3s ease-out forwards;
+    }
+    .correct-word-list {
+        font-size: 24px;
+        margin-top: 5px; 
+        /*overflow-y: auto;*/  /* Enable vertical scrolling */
+        line-height: 1;
+    }
+    .correct-word {
+        display: block;
+    }
+    .play-again-btn {
+        margin-top: 20px;
+        padding: 15px 30px;  /* Increased padding to make the button larger */
+        font-size: 24px;  /* Increased font size */
+        font-weight: bold;
+        background-color: yellow;  /* Yellow button */
+        color: black;  /* Black text */
+        border: none;
+        border-radius: 8px;  /* Slightly rounded corners */
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    .play-again-btn:hover {
+        background-color: gold;  /* Slightly darker yellow when hovered */
+        transform: scale(1.05);  /* Button grows slightly when hovered */
+    }
+    .play-again-btn:active {
+        transform: scale(0.95);  /* Button shrinks slightly when clicked */
+    }
+    .game-over-hidden {
+        display: none; /* Hide elements when game is over */
+    }
+    .hint-btn {
+        margin-top: 30px;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: bold;
+        background-color: lightgreen;
+        color: black;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .hint-btn:hover {
+        background-color: green;
+        color: white;
+    }
+#hangmanCanvas {
+    margin-top: 0px;  /* Adjust this value to control how close it is */
+}
+
+    @keyframes confetti {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(1); opacity: 0; }
+}

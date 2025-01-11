@@ -111,7 +111,7 @@ body {
         display: none; /* Hide elements when game is over */
     }
     .hint-btn {
-        margin-top: 30px;
+        margin-top: 70px;
         padding: 10px 20px;
         font-size: 15px;
         font-weight: bold;
